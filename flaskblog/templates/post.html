@@ -57,23 +57,57 @@
       </div>
     </div>
     {% endif %}
-    {% for comment in post.comments %}
-      <div class="media">
-        <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
-        <div class="media-body">
-          <div class="article-metadata">
-            <div class="container">
-              <div class="row">
-                <div class="col-6"><b>{{ comment.user.username }}</b></div>
-                <div class="col-6" style="text-align: right">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</div>
+    <!-- Using 'recursive' macro from Jinja to get chields comments -->
+    <!-- https://jinja.palletsprojects.com/en/2.11.x/templates/ -->
+    <!-- dynamic lazy attribute return a query object that can be filtered -->
+    {% for comment in post.comments.filter_by(comment_id=none ).all() recursive %}
+        <div class="media">
+          <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
+          <div class="media-body">
+            <div class="article-metadata">
+              <div class="container">
+                <div class="row">
+                  <div class="col-6"><b>{{ comment.user.username }}</b></div>
+                  <div class="col-6" style="text-align: right">{{ comment.date_posted.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+                <div class="row">
+                  <div class="col-sm"><p class="text-justify">{{ comment.content }}</p></div>
+                </div>
               </div>
-              <div class="row">
-                <div class="col-sm"><p class="text-justify">{{ comment.content }}</p></div>
+              <button class="btn btn-link" onclick="showForm('reply{{comment.id}}')">
+                <svg class="bi bi-reply-fill" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9.079 11.9l4.568-3.281a.719.719 0 000-1.238L9.079 4.1A.716.716 0 008 4.719V6c-1.5 0-6 0-7 8 2.5-4.5 7-4 7-4v1.281c0 .56.606.898 1.079.62z"/>
+                </svg>
+                Reply</button>
+            </div>
+            <div class="media" id="reply{{comment.id}}" style="display: none">
+              <img class="rounded-circle article-img" src="{{ url_for('static', filename='profile_pics/' + post.author.image_file) }}">
+              <div class="media-body">
+                <form class="form-inline" method="POST" action="">
+                  <div class="form-group  col-10">
+                    {% if form.content.errors %}
+                      {{form.content(class="form-control mr-2 col-12 is-invalid", placeholder="Reply Here")}}
+                      <div class="invalid-feedback">
+                          {% for error in form.content.errors %}
+                              <span>{{ error }}</span>
+                          {% endfor %}
+                      </div>
+                  {% else %}
+                      {{form.content(class="form-control mr-2 col-12", placeholder="Reply Here")}}
+                  {% endif %}
+                  </div>
+                  {{ form.csrf_token }}
+                  {{ form.comment_id(value=comment.id) }}
+                  {{ form.submit(class="btn btn-outline-info col-2",value="Reply") }}
+                </form>
               </div>
             </div>
+            <!-- recursive from Jinja -->
+            {% if comment.comments %}
+              {{loop(comment.comments)}}
+            {% endif %}
           </div>
         </div>
-      </div>
     {% endfor %}
   </div>
   <!-- Modal -->
@@ -95,4 +129,15 @@
       </div>
     </div>
   </div>
+  <!-- https://www.w3schools.com/howto/howto_js_toggle_hide_show.asp -->
+  <script>
+    function showForm(divID) {
+      var x = document.getElementById(divID);
+      if (x.style.display === "none") {
+        x.style.display = "flex";
+      } else {
+        x.style.display = "none";
+      }
+    }
+  </script>
 {% endblock content %}

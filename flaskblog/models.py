@@ -41,7 +41,9 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship(User)
     # loading comments in the reverse order of date_posted
-    comments = db.relationship('Comment', backref='comm', lazy=True, order_by='desc(Comment.date_posted)',
+    # Change the lazy attribute to dynamic
+    # https://docs.sqlalchemy.org/en/13/orm/collections.html
+    comments = db.relationship('Comment', backref='comm', lazy='dynamic', order_by='desc(Comment.date_posted)',
                                cascade="all, delete, delete-orphan") # removes comments related to a post when a post is deleted
 
     def __repr__(self):
@@ -73,6 +75,11 @@ class Comment(db.Model):
     user = db.relationship(User)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
     post = db.relationship(Post)
+    # Create a Self Reletionship One-to-Many
+    # https://docs.sqlalchemy.org/en/13/orm/self_referential.html
+    comment_id = db.Column(db.Integer, db.ForeignKey('comment.id'))
+    comments = db.relationship('Comment', lazy=True, order_by='desc(Comment.date_posted)',
+                               cascade="all, delete, delete-orphan")
 
 
 @dataclass

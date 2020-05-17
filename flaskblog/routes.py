@@ -124,7 +124,9 @@ def post(post_id):
     form = CommentForm()
     if form.validate_on_submit():
         if current_user.is_authenticated: # you can only comment if you're logged in
-            comment = Comment(content=form.content.data, user=current_user, post=post)
+            # Check if is a comment from a post or from another comment
+            comment_id = None if form.comment_id.data == '' else int(form.comment_id.data)
+            comment = Comment(content=form.content.data, user=current_user, post=post, comment_id=comment_id)
             db.session.add(comment)
             db.session.commit()
             flash('Your post has been created!', 'success')

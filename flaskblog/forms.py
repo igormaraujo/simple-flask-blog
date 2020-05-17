@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField
+# Add HiddenField import
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, RadioField, HiddenField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flaskblog.models import User
 
@@ -65,4 +66,6 @@ class PostForm(FlaskForm):
 
 class CommentForm(FlaskForm):
     content = TextAreaField('Content', validators=[DataRequired()])
+    # Add a hiddenField with comment_id to replay
+    comment_id = HiddenField('Comment_id')
     submit = SubmitField('Send comment')

@@ -62,7 +62,43 @@ Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibu
 
 db.session.add(comment2)
 
+# Insert New Post
+post3 = Post(title='Test post with Multi Level Comments', content_type='plain', content="""# This is a markdown post
+
+**Here, you can use MD as you want.**
+
+*Lists are possible*
+
+- With multiple items
+- Numbered lists as well
+
+Like this
+
+1. And this
+""", user=default_user2)
+
+db.session.add(post3)
+
+# Insert new Comment
+comment3 = Comment(user=default_user1, content='''
+Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibulum ut, placerat ac, adipiscingvitae, felis. Curabitur dictum gravida.
+''', post=post3)
+
+db.session.add(comment3)
+
 try:
+    db.session.commit()
+    # Insert new Reply to comment
+    comment3_1 = Comment(user=default_user1, content='''Replay Comment Level 1.''', post=post3, comment_id=comment3.id)
+    comment3_1_1 = Comment(user=default_user1, content='''Replay Comment Level 1.2.''', post=post3, comment_id=comment3.id)
+    db.session.add(comment3_1)
+    db.session.add(comment3_1_1)
+    db.session.commit()
+    # Insert new Reply to comment
+    comment3_2 = Comment(user=default_user1, content='''Replay Comment Level 2.''', post=post3, comment_id=comment3_1.id)
+    comment3_2_2 = Comment(user=default_user1, content='''Replay Comment Level 2.2.''', post=post3, comment_id=comment3_1.id)
+    db.session.add(comment3_2)
+    db.session.add(comment3_2_2)
     db.session.commit()
     print('\nFinalized - database created successfully!')
 except Exception as e:
